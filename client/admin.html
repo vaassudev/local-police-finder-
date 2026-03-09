@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Local Police Finder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1E1B4B',
+            secondary: '#B91C1C',
+            accent: '#D97706',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body {
+      background: #f8fafc;
+      background-image: radial-gradient(ellipse at 20% 20%, rgba(99,102,241,0.05) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(185,28,28,0.03) 0%, transparent 50%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      color: #1e293b;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    /* Sidebar */
+    .sidebar {
+      background: #ffffff;
+      border-right: 1px solid #e2e8f0;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.02);
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; border-radius: 12px;
+      font-size: 13px; font-weight: 600;
+      color: #64748b; cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative; overflow: hidden;
+    }
+    .nav-item:hover { color: #1e293b; background: #f1f5f9; transform: translateX(3px); }
+    .nav-item.active {
+      color: #fff;
+      background: linear-gradient(135deg, #4338ca, #6366f1);
+      box-shadow: 0 4px 20px rgba(99,102,241,0.3);
+    }
+    .nav-item.active::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; background: #ffffff; border-radius: 0 3px 3px 0; opacity: 0.5;
+    }
+    .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .nav-badge {
+      margin-left: auto; font-size: 10px; font-weight: 800;
+      padding: 2px 7px; border-radius: 999px;
+      background: #fee2e2; color: #ef4444;
+    }
+
+    /* Main panel area */
+    .panel-wrapper {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      min-height: 600px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    }
+
+    /* Stat cards */
+    .stat-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px; padding: 24px;
+      position: relative; overflow: hidden;
+      transition: all 0.25s ease;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); border-color: #cbd5e1; }
+    .stat-card .icon-wrap {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .stat-card .stat-val {
+      font-size: 36px; font-weight: 900; line-height: 1; margin-bottom: 4px;
+      color: #1e293b;
+    }
+    .stat-card .stat-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em;
+      color: #64748b;
+    }
+    .stat-card .stat-bg {
+      position: absolute; right: -10px; bottom: -10px;
+      width: 90px; height: 90px; border-radius: 50%; opacity: 0.05;
+    }
+
+    /* Quick action cards */
+    .action-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px; padding: 28px 32px;
+      position: relative; overflow: hidden;
+      cursor: pointer; transition: all 0.3s ease;
+    }
+    .action-card:hover { transform: translateY(-4px); border-color: #cbd5e1; box-shadow: 0 12px 20px -5px rgba(0,0,0,0.05); }
+
+    /* Tables */
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table thead tr { background: #f8fafc; }
+    .data-table thead th {
+      padding: 14px 18px; text-align: left;
+      font-size: 10px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.14em; color: #64748b;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .data-table tbody tr {
+      border-bottom: 1px solid #f1f5f9;
+      transition: background 0.2s ease;
+    }
+    .data-table tbody tr:hover { background: #f8fafc; }
+    .data-table tbody td { padding: 16px 18px; color: #334155; }
+    .data-table tbody tr:last-child { border-bottom: none; }
+
+    /* Status badges */
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 999px;
+      font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .badge-dot { width: 5px; height: 5px; border-radius: 50%; }
+    .badge-resolved { background: rgba(34,197,94,0.12); color: #4ade80; }
+    .badge-resolved .badge-dot { background: #4ade80; }
+    .badge-progress { background: rgba(251,191,36,0.12); color: #fbbf24; }
+    .badge-progress .badge-dot { background: #fbbf24; }
+    .badge-pending { background: rgba(148,163,184,0.1); color: #94a3b8; }
+    .badge-pending .badge-dot { background: #94a3b8; }
+    .badge-critical { background: rgba(239,68,68,0.12); color: #f87171; animation: pulse 2s infinite; }
+    .badge-critical .badge-dot { background: #f87171; }
+
+    /* Status select */
+    .status-select {
+      border: none; outline: none; cursor: pointer;
+      padding: 6px 10px; border-radius: 8px;
+      font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      background: linear-gradient(135deg, #4338ca, #6366f1);
+      color: white; border: none; padding: 10px 20px;
+      border-radius: 10px; font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      cursor: pointer; transition: all 0.25s ease;
+      box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.4); }
+    .btn-danger {
+      background: rgba(239,68,68,0.1); color: #f87171;
+      border: 1px solid rgba(239,68,68,0.2);
+      padding: 7px 14px; border-radius: 8px;
+      font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    .btn-danger:hover { background: rgba(239,68,68,0.2); }
+    .btn-ghost {
+      background: rgba(99,102,241,0.1); color: #818cf8;
+      border: 1px solid rgba(99,102,241,0.2);
+      padding: 8px 16px; border-radius: 10px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    .btn-ghost:hover { background: rgba(99,102,241,0.2); }
+    .btn-details {
+      background: rgba(99,102,241,0.15); color: #a5b4fc;
+      border: 1px solid rgba(99,102,241,0.25);
+      padding: 7px 14px; border-radius: 8px;
+      font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    .btn-details:hover { background: rgba(99,102,241,0.3); color: white; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(15,23,42,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none; align-items: center; justify-content: center; padding: 24px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px; max-width: 640px; width: 100%;
+      max-height: 85vh; overflow-y: auto;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+    }
+    .modal-header {
+      position: sticky; top: 0;
+      background: #ffffff;
+      border-bottom: 1px solid #f1f5f9;
+      padding: 22px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-radius: 24px 24px 0 0;
+    }
+    .modal-field { padding: 14px 0; border-bottom: 1px solid #f1f5f9; }
+    .modal-field:last-child { border-bottom: none; }
+    .modal-field-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: #94a3b8; margin-bottom: 5px; }
+    .modal-field-value { font-size: 13px; font-weight: 600; color: #1e293b; }
+
+    /* Fade in animation */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.35s ease forwards; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin { animation: spin 0.8s linear infinite; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+
+    /* Alert panel specific */
+    .alert-row { background: rgba(239,68,68,0.04); }
+    .alert-row:hover { background: rgba(239,68,68,0.08) !important; }
+
+    /* Section headings */
+    .section-title { font-size: 26px; font-weight: 900; color: #1e293b; margin-bottom: 4px; }
+    .section-sub { font-size: 13px; color: #64748b; font-weight: 500; }
+
+    /* Table container card */
+    .table-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px; overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 28px; right: 28px;
+      padding: 14px 22px; border-radius: 14px;
+      font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
+      z-index: 9999; box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      animation: fadeUp 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header style="background:#ffffff; border-bottom:1px solid #e2e8f0;" class="py-4 px-6 flex justify-between items-center sticky top-0 z-50">
+    <div class="flex items-center gap-4">
+      <img src="assets/national_emblem.png" alt="National Emblem" class="h-8 w-auto object-contain">
+      <div class="w-px h-8" style="background:#e2e8f0"></div>
+      <img src="assets/tn_police_logo.png" alt="TN Police Logo" class="h-11 w-11 object-contain rounded-full bg-white p-1 border-2" style="border-color:#e2e8f0;">
+      <div>
+        <div class="text-[#1e1b4b] font-black tracking-tight text-base uppercase leading-none">Admin Control Portal</div>
+        <div class="text-[9px] uppercase tracking-widest font-bold mt-0.5" style="color:#6366f1">Tamil Nadu Police Digital Division</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="text-[11px] text-slate-400 font-semibold hidden md:block">Secure Environment</div>
+      <div class="w-2 h-2 rounded-full bg-green-400" style="box-shadow:0 0 8px #4ade80"></div>
+      <div id="auth-buttons"></div>
+    </div>
+  </header>
+
+  <!-- Layout -->
+  <div class="flex" style="min-height:calc(100vh - 68px)">
+
+    <!-- Sidebar -->
+    <aside class="sidebar w-64 shrink-0 flex flex-col p-4 sticky top-[68px] h-[calc(100vh-68px)] overflow-y-auto">
+      <div class="mb-6 px-2">
+        <div class="text-[9px] font-black uppercase tracking-widest" style="color:#4338ca">Management Console</div>
+      </div>
+      <nav class="flex flex-col gap-1">
+        <div class="nav-item" onclick="showPanel('dashboard')" id="nav-dashboard">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          Overview
+        </div>
+        <div class="nav-item" onclick="showPanel('stations')" id="nav-stations">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          Manage Stations
+        </div>
+        <div class="nav-item" onclick="showPanel('reports')" id="nav-reports">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          Incident Reports
+          <span class="nav-badge" id="reports-badge" style="display:none"></span>
+        </div>
+        <div class="nav-item" onclick="showPanel('complaints')" id="nav-complaints">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Complaints
+          <span class="nav-badge" id="complaints-badge" style="display:none"></span>
+        </div>
+        <div class="nav-item" onclick="showPanel('alerts')" id="nav-alerts">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          Emergency Alerts
+          <span class="nav-badge" id="alerts-badge" style="display:none; background:rgba(239,68,68,0.2);color:#f87171;"></span>
+        </div>
+      </nav>
+      <div class="mt-auto pt-4" style="border-top:1px solid rgba(99,102,241,0.1)">
+        <div class="nav-item" onclick="logout()" style="color:#f87171">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-6 0v-1m6-10V5a3 3 0 00-6 0v1m6 0H9"/></svg>
+          Sign Out
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-grow p-6 md:p-8">
+      <div class="panel-wrapper p-6 md:p-8 fade-up" id="panel-container">
+        <!-- Panels injected via JS -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer style="background:#ffffff;border-top:1px solid #e2e8f0;" class="px-6 py-4">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <img src="assets/tn_police_logo.png" class="h-7 w-7 grayscale opacity-50">
+        <span class="text-[11px] font-bold text-slate-400">Secure Admin Environment</span>
+      </div>
+      <p class="text-[10px] uppercase tracking-widest text-slate-400">&copy; 2026 Tamil Nadu Police Digital Division</p>
+      <a href="index.html" class="text-[11px] text-indigo-600 hover:text-indigo-800 transition font-medium">Public Portal &rarr;</a>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const u = getUser();
+      if (!u || u.role !== 'admin') {
+        alert('Unauthorized access');
+        window.location.href = 'index.html';
+        return;
+      }
+      showPanel('dashboard');
+    });
+
+    const container = document.getElementById('panel-container');
+
+    function setActiveNav(id) {
+      document.querySelectorAll('.nav-item').forEach(a => a.classList.remove('active'));
+      const el = document.getElementById('nav-' + id);
+      if (el) el.classList.add('active');
+    }
+
+    function getStatusBadge(status) {
+      if (status === 'Resolved') return `<span class="badge badge-resolved"><span class="badge-dot"></span>Resolved</span>`;
+      if (status === 'In Progress' || status === 'Reviewed') return `<span class="badge badge-progress"><span class="badge-dot"></span>${status}</span>`;
+      return `<span class="badge badge-pending"><span class="badge-dot"></span>Pending</span>`;
+    }
+
+    function getStatusStyle(status) {
+      if (status === 'Resolved') return 'background:rgba(34,197,94,0.1);color:#4ade80;border:1px solid rgba(34,197,94,0.2);';
+      if (status === 'Reviewed' || status === 'In Progress') return 'background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.2);';
+      return 'background:rgba(148,163,184,0.08);color:#94a3b8;border:1px solid rgba(148,163,184,0.15);';
+    }
+
+    function styleStatusSelect(el) {
+      const s = el.value;
+      if (s === 'Resolved') { el.style.cssText += 'background:rgba(34,197,94,0.1);color:#4ade80;border:1px solid rgba(34,197,94,0.2);'; }
+      else if (s === 'Reviewed' || s === 'In Progress') { el.style.cssText += 'background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.2);'; }
+      else { el.style.cssText += 'background:rgba(148,163,184,0.08);color:#94a3b8;border:1px solid rgba(148,163,184,0.15);'; }
+    }
+
+    function showLoader() {
+      container.innerHTML = `<div class="flex flex-col items-center justify-center h-64 gap-4">
+        <div class="spin" style="width:40px;height:40px;border:3px solid rgba(99,102,241,0.2);border-top-color:#6366f1;border-radius:50%"></div>
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.15em;color:#475569">Syncing Secure Data...</div>
+      </div>`;
+    }
+
+    async function showPanel(panel) {
+      setActiveNav(panel);
+      showLoader();
+      try {
+        if (panel === 'dashboard') await renderDashboard();
+        else if (panel === 'stations') await renderStations();
+        else if (panel === 'reports') await renderReports();
+        else if (panel === 'complaints') await renderComplaints();
+        else if (panel === 'alerts') await renderAlerts();
+      } catch (err) {
+        container.innerHTML = `<div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:16px;padding:32px" class="fade-up">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <svg style="width:24px;height:24px;color:#f87171;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <div style="font-size:16px;font-weight:900;color:#f87171;text-transform:uppercase;letter-spacing:0.05em">Access Error</div>
+          </div>
+          <p style="font-size:13px;color:#94a3b8;margin-bottom:20px">${err.message}</p>
+          <button onclick="showPanel('dashboard')" class="btn-ghost">Retry</button>
+        </div>`;
+      }
+    }
+
+    async function renderDashboard() {
+      let stationCount = '—', reportCount = '—', complaintCount = '—', alertCount = '—';
+      try {
+        const [stations, reports, comps, alerts] = await Promise.all([
+          apiFetch('/stations').catch(() => []),
+          apiFetch('/report').catch(() => []),
+          apiFetch('/complaint').catch(() => []),
+          apiFetch('/emergency').catch(() => []),
+        ]);
+        stationCount = stations.length;
+        reportCount = reports.length;
+        complaintCount = comps.length;
+        alertCount = alerts.length;
+
+        // Update nav badges
+        const pendingReports = reports.filter(r => r.status === 'Pending').length;
+        const pendingComps = comps.filter(c => c.status === 'Pending').length;
+        if (pendingReports > 0) { const b = document.getElementById('reports-badge'); b.textContent = pendingReports; b.style.display = ''; }
+        if (pendingComps > 0) { const b = document.getElementById('complaints-badge'); b.textContent = pendingComps; b.style.display = ''; }
+        if (alerts.length > 0) { const b = document.getElementById('alerts-badge'); b.textContent = alerts.length; b.style.display = ''; }
+      } catch(e) {}
+
+      container.innerHTML = `<div class="fade-up">
+        <!-- Header -->
+        <div style="margin-bottom:28px">
+          <h2 class="section-title">Systems Overview</h2>
+          <p class="section-sub">Welcome back, Admin. All systems operational.</p>
+        </div>
+
+        <!-- KPI Stats -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:28px">
+          <div class="stat-card" style="border-left:4px solid #6366f1" onclick="showPanel('stations')">
+            <div class="icon-wrap" style="background:rgba(99,102,241,0.1)">
+              <svg style="width:22px;height:22px;color:#6366f1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            </div>
+            <div class="stat-val">${stationCount}</div>
+            <div class="stat-label">Stations</div>
+          </div>
+          <div class="stat-card" style="border-left:4px solid #f59e0b" onclick="showPanel('reports')">
+            <div class="icon-wrap" style="background:rgba(245,158,11,0.1)">
+              <svg style="width:22px;height:22px;color:#d97706" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <div class="stat-val" style="color:#d97706">${reportCount}</div>
+            <div class="stat-label">Incidents</div>
+          </div>
+          <div class="stat-card" style="border-left:4px solid #a855f7" onclick="showPanel('complaints')">
+            <div class="icon-wrap" style="background:rgba(168,85,247,0.1)">
+              <svg style="width:22px;height:22px;color:#9333ea" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <div class="stat-val" style="color:#9333ea">${complaintCount}</div>
+            <div class="stat-label">Complaints</div>
+          </div>
+          <div class="stat-card" style="border-left:4px solid #ef4444" onclick="showPanel('alerts')">
+            <div class="icon-wrap" style="background:rgba(239,68,68,0.1)">
+              <svg style="width:22px;height:22px;color:#ef4444" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            </div>
+            <div class="stat-val" style="color:#ef4444">${alertCount}</div>
+            <div class="stat-label">SOS Alerts</div>
+          </div>
+        </div>
+
+        <!-- System Intelligence Banner -->
+        <div style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:14px;padding:18px 22px;display:flex;align-items:center;gap:14px;margin-bottom:28px">
+          <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 10px rgba(34,197,94,0.3);flex-shrink:0"></div>
+          <p style="font-size:13px;font-weight:600;color:#64748b;line-height:1.5"><span style="color:#4338ca;font-weight:800">System Intelligence:</span> No critical infrastructure failures detected. High volume of search queries in South District.</p>
+        </div>
+
+        <!-- Quick Action Cards -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="action-card" style="box-shadow:0 10px 15px -3px rgba(99,102,241,0.05)" onclick="showPanel('stations')">
+            <div style="position:absolute;right:-20px;top:-20px;width:120px;height:120px;border-radius:50%;background:rgba(99,102,241,0.03)"></div>
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.18em;color:#4338ca;margin-bottom:8px">Infrastructure</div>
+            <h4 style="font-size:22px;font-weight:900;color:#1e293b;margin-bottom:6px">Manage Stations</h4>
+            <p style="font-size:12px;color:#64748b;margin-bottom:20px">Update geo-locations and officer assignments across all districts.</p>
+            <span class="btn-primary" style="font-size:11px;padding:8px 16px">Open Registry &rarr;</span>
+          </div>
+          <div class="action-card" style="box-shadow:0 10px 15px -3px rgba(239,68,68,0.05)" onclick="showPanel('reports')">
+            <div style="position:absolute;right:-20px;top:-20px;width:120px;height:120px;border-radius:50%;background:rgba(239,68,68,0.03)"></div>
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.18em;color:#ef4444;margin-bottom:8px">Active Duty</div>
+            <h4 style="font-size:22px;font-weight:900;color:#1e293b;margin-bottom:6px">View Incidents</h4>
+            <p style="font-size:12px;color:#64748b;margin-bottom:20px">Review real-time digital first reports from the field.</p>
+            <span style="background:#fee2e2;color:#ef4444;border:1px solid #fecaca;font-size:11px;padding:8px 16px;border-radius:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">Open Registry &rarr;</span>
+          </div>
+          <div class="action-card" style="box-shadow:0 10px 15px -3px rgba(168,85,247,0.05)" onclick="showPanel('complaints')">
+            <div style="position:absolute;right:-20px;top:-20px;width:120px;height:120px;border-radius:50%;background:rgba(168,85,247,0.03)"></div>
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.18em;color:#9333ea;margin-bottom:8px">Grievances</div>
+            <h4 style="font-size:22px;font-weight:900;color:#1e293b;margin-bottom:6px">Complaints</h4>
+            <p style="font-size:12px;color:#64748b;margin-bottom:20px">Processing formal public grievances and e-FIR submissions.</p>
+            <span style="background:#f3e8ff;color:#9333ea;border:1px solid #e9d5ff;font-size:11px;padding:8px 16px;border-radius:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">Open Registry &rarr;</span>
+          </div>
+          <div class="action-card" style="box-shadow:0 10px 15px -3px rgba(251,191,36,0.05)" onclick="showPanel('alerts')">
+            <div style="position:absolute;right:-20px;top:-20px;width:120px;height:120px;border-radius:50%;background:rgba(251,191,36,0.03)"></div>
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.18em;color:#d97706;margin-bottom:8px">Emergency</div>
+            <h4 style="font-size:22px;font-weight:900;color:#1e293b;margin-bottom:6px">SOS Alerts</h4>
+            <p style="font-size:12px;color:#64748b;margin-bottom:20px">Real-time emergency triggers requiring immediate dispatch.</p>
+            <span style="background:#fef3c7;color:#d97706;border:1px solid #fde68a;font-size:11px;padding:8px 16px;border-radius:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">Open Registry &rarr;</span>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    async function renderStations() {
+      const stations = await apiFetch('/stations');
+      container.innerHTML = `<div class="fade-up">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px">
+          <div>
+            <h2 class="section-title">Law Enforcement Units</h2>
+            <p class="section-sub">Directory of ${stations.length} active police stations across the state.</p>
+          </div>
+          <button class="btn-primary" onclick="addStationPrompt()">+ Add Unit</button>
+        </div>
+        <div class="table-card">
+          <table class="data-table">
+            <thead><tr>
+              <th>Unit ID</th><th>Station Name</th><th>Jurisdiction / Address</th><th>Officer In-Charge</th><th style="text-align:right">Actions</th>
+            </tr></thead>
+            <tbody>
+            ${stations.map(s => `<tr>
+                  <td><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#4338ca;font-weight:700">${s.station_id}</span></td>
+                  <td><div style="font-size:13px;font-weight:700;color:#1e293b">${s.name}</div></td>
+                  <td><div style="font-size:12px;color:#64748b;max-width:220px;line-height:1.5">${s.address}</div></td>
+                  <td><span style="background:#f1f5f9;color:#4338ca;border:1px solid #e2e8f0;padding:4px 10px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em">${s.officer_name}</span></td>
+              <td style="text-align:right"><button onclick="delStation('${s._id}')" class="btn-danger">Decommission</button></td>
+            </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+
+    async function renderReports() {
+      const reports = await apiFetch('/report');
+      container.innerHTML = `<div class="fade-up">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px">
+          <div>
+            <h2 class="section-title">Incident Registry</h2>
+            <p class="section-sub">Review and process citizen-generated incident reports.</p>
+          </div>
+          <button class="btn-ghost" onclick="showPanel('reports')">&#x21bb; Refresh</button>
+        </div>
+        <div class="table-card">
+          <table class="data-table">
+            <thead><tr><th>Record ID</th><th>Incident Type</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+            ${reports.map(r => `<tr>
+                  <td>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#4338ca;font-weight:700">${r.report_id}</div>
+                    <div style="font-size:10px;color:#64748b;margin-top:3px">${new Date(r.date).toLocaleString()}</div>
+                  </td>
+                  <td>
+                    <div style="font-size:13px;font-weight:700;color:#1e293b">${r.incident_type}</div>
+                    <div style="font-size:11px;color:#64748b;margin-top:3px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.description}</div>
+                  </td>
+                  <td><span style="font-size:12px;color:#64748b">&#128205; ${r.location}</span></td>
+              <td>
+                <select class="status-select" style="${getStatusStyle(r.status)}padding:6px 10px;border-radius:8px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;outline:none;cursor:pointer;" onchange="updateStatus('report','${r.report_id}',this)">
+                  <option value="Pending" ${r.status==='Pending'?'selected':''}>Pending</option>
+                  <option value="In Progress" ${r.status==='In Progress'?'selected':''}>In Progress</option>
+                  <option value="Resolved" ${r.status==='Resolved'?'selected':''}>Resolved</option>
+                </select>
+              </td>
+              <td><button class="btn-details" onclick='viewDetails(${JSON.stringify({id:r.report_id,type:"Incident Report",category:r.incident_type,description:r.description,location:r.location,date:new Date(r.date).toLocaleString(),status:r.status})})'>View Details</button></td>
+            </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+
+    async function renderComplaints() {
+      const comps = await apiFetch('/complaint');
+      container.innerHTML = `<div class="fade-up">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px">
+          <div>
+            <h2 class="section-title">Official Complaints</h2>
+            <p class="section-sub">Processing formal public grievances and e-FIR statements.</p>
+          </div>
+          <button class="btn-ghost" onclick="showPanel('complaints')">&#x21bb; Refresh Registry</button>
+        </div>
+        <div class="table-card">
+          <table class="data-table">
+            <thead><tr><th>E-FIR ID</th><th>Complainant</th><th>Category &amp; Reason</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+            ${comps.map(c => `<tr>
+              <td>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#4338ca;font-weight:700">${c.complaint_id}</div>
+                <div style="font-size:10px;color:#64748b;margin-top:3px">${new Date(c.createdAt).toLocaleString()}</div>
+              </td>
+              <td>
+                <div style="font-size:13px;font-weight:700;color:#1e293b">${c.name}</div>
+                <div style="font-size:11px;color:#64748b;margin-top:2px">${c.phone}</div>
+                <div style="font-size:11px;color:#4338ca;margin-top:1px">${c.email}</div>
+              </td>
+              <td>
+                <span style="background:#f3e8ff;color:#9333ea;border:1px solid #e9d5ff;padding:3px 8px;border-radius:6px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;display:inline-block;margin-bottom:6px">${c.category}</span>
+                <div style="font-size:11px;color:#64748b;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.description}</div>
+                <div style="font-size:10px;color:#64748b;margin-top:3px">&#128205; ${c.location}</div>
+              </td>
+              <td>
+                <select class="status-select" style="${getStatusStyle(c.status)}padding:6px 10px;border-radius:8px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;outline:none;cursor:pointer;" onchange="updateStatus('complaint','${c.complaint_id}',this)">
+                  <option value="Pending" ${c.status==='Pending'?'selected':''}>Pending</option>
+                  <option value="Reviewed" ${c.status==='Reviewed'?'selected':''}>In Review</option>
+                  <option value="Resolved" ${c.status==='Resolved'?'selected':''}>Resolved</option>
+                </select>
+              </td>
+              <td><button class="btn-details" onclick='viewDetails(${JSON.stringify({id:c.complaint_id,type:"Complaint",category:c.category,name:c.name,phone:c.phone,email:c.email,description:c.description,location:c.location,date:new Date(c.createdAt).toLocaleString(),status:c.status})})'>View Details</button></td>
+            </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+
+    async function renderAlerts() {
+      const alerts = await apiFetch('/emergency');
+      container.innerHTML = `<div class="fade-up">
+        <div style="margin-bottom:24px">
+          <h2 class="section-title" style="color:#ef4444">Critical Alerts</h2>
+          <p class="section-sub">Real-time emergency SOS triggers requiring immediate dispatch.</p>
+        </div>
+        <div class="table-card" style="border-color:#fecaca">
+          <table class="data-table">
+            <thead><tr style="background:#fff1f2">
+              <th style="color:#e11d48">SOS ID</th>
+              <th style="color:#e11d48">GPS Coordinates</th>
+              <th style="color:#e11d48">Timestamp</th>
+              <th style="color:#e11d48">Status</th>
+            </tr></thead>
+            <tbody>
+            ${alerts.map(a => `<tr class="alert-row" style="background:#fffafa">
+              <td><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#e11d48;font-weight:700">${a.alert_id}</span></td>
+              <td><a href="https://www.google.com/maps/search/?api=1&query=${a.user_location}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;color:#e11d48;font-size:11px;font-weight:700;text-decoration:none;border:1px solid #fecaca;padding:6px 12px;border-radius:8px;background:#ffffff;transition:all 0.2s" onmouseover="this.style.background='#fff1f2'" onmouseout="this.style.background='#ffffff'">&#128205; Live Map &rarr;</a></td>
+              <td><span style="font-size:11px;font-weight:700;color:#64748b">${new Date(a.timestamp).toLocaleString()}</span></td>
+              <td><span class="badge badge-critical" style="background:#fee2e2;color:#ef4444"><span class="badge-dot" style="background:#ef4444"></span>Critical / Unresolved</span></td>
+            </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+
+    async function updateStatus(type, id, el) {
+      const newStatus = el.value;
+      styleStatusSelect(el);
+      try {
+        await apiFetch(`/${type}/status/${id}`, { method: 'PUT', body: JSON.stringify({ status: newStatus }) });
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.style.cssText = 'position:fixed;bottom:28px;right:28px;background:linear-gradient(135deg,#16a34a,#15803d);color:white;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;padding:14px 22px;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.3);z-index:9999;animation:fadeUp 0.3s ease';
+        toast.textContent = `✓ Status updated to ${newStatus}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
+      } catch (err) { alert('Update failed: ' + err.message); }
+    }
+
+    function viewDetails(data) {
+      const modal = document.getElementById('detail-modal');
+      const body = document.getElementById('detail-modal-body');
+      const labels = {id:'Reference ID',type:'Type',category:'Category',name:'Complainant',phone:'Phone',email:'Email',description:'Description / Reason',location:'Location',date:'Submitted On',status:'Current Status'};
+      const statusColor = {'Resolved':'#16a34a','In Progress':'#d97706','Reviewed':'#d97706','Pending':'#64748b'};
+      body.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0">' +
+        Object.entries(data).map(([k,v]) => {
+          const label = labels[k] || k.charAt(0).toUpperCase()+k.slice(1);
+          const isStatus = k==='status';
+          const isDesc = k==='description';
+          const color = isStatus ? (statusColor[v] || '#64748b') : '#1e293b';
+          return `<div class="modal-field" style="${isDesc?'grid-column:span 2':''};padding:14px 0;border-bottom:1px solid #f1f5f9">
+            <div class="modal-field-label">${label}</div>
+            <div class="modal-field-value" style="color:${color};${isDesc?'white-space:pre-wrap;line-height:1.7':''}">${v}</div>
+          </div>`;
+        }).join('') + '</div>';
+      modal.classList.add('open');
+    }
+
+    async function delStation(dbId) {
+      if(!confirm('Authorize permanent decommission of this unit?')) return;
+      try { await apiFetch(`/stations/${dbId}`, { method: 'DELETE' }); showPanel('stations'); }
+      catch (err) { alert(err.message); }
+    }
+
+    async function addStationPrompt() {
+      const name = prompt("Enter Unit Designation / Station Name:"); if(!name) return;
+      const addr = prompt("Assigned Sector Address:");
+      const lat = parseFloat(prompt("Strategic Latitude:"));
+      const lon = parseFloat(prompt("Strategic Longitude:"));
+      const phone = prompt("Communications Line:");
+      const officer = prompt("Appointed Unit Commander:");
+      const payload = { station_id: 'STN-' + Math.floor(Math.random()*10000), name, address: addr, latitude: lat, longitude: lon, phone, officer_name: officer };
+      try { await apiFetch('/stations', { method: 'POST', body: JSON.stringify(payload) }); showPanel('stations'); }
+      catch (err) { alert('Transaction failed: ' + err.message); }
+    }
+  </script>
+
+  <!-- Detail Modal -->
+  <div id="detail-modal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.15em;color:#4338ca;margin-bottom:4px">Case File</div>
+          <h2 style="font-size:18px;font-weight:900;color:#1e293b;text-transform:uppercase;letter-spacing:0.04em">Case Details</h2>
+        </div>
+        <button onclick="document.getElementById('detail-modal').classList.remove('open')" style="width:36px;height:36px;border-radius:10px;background:#f1f5f9;border:1px solid #e2e8f0;color:#64748b;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s" onmouseover="this.style.background='#fee2e2';this.style.color='#ef4444'" onmouseout="this.style.background='#f1f5f9';this.style.color='#64748b'">&times;</button>
+      </div>
+      <div style="padding:24px 28px;" id="detail-modal-body"></div>
+    </div>
+  </div>
+
+</body>
+</html>

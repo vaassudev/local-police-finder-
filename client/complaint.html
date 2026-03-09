@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Official Complaint | Local Police Finder</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1E1B4B',
+            secondary: '#B91C1C',
+            accent: '#D97706',
+            surface: '#F8FAFC',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-surface text-slate-900 flex flex-col min-h-screen font-inter">
+  
+  <header class="bg-primary text-white py-4 px-6 md:px-12 flex flex-wrap justify-between items-center shadow-2xl sticky top-0 z-50 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-primary to-indigo-900 opacity-50"></div>
+    <div class="relative flex items-center gap-4 mb-2 md:mb-0">
+      <img src="assets/tn_police_logo.png" alt="TN Police Logo" class="h-14 w-14 object-contain bg-white rounded-full p-1 border-2 border-accent shadow-xl transform transition hover:scale-110">
+      <div class="flex flex-col">
+        <h1 class="text-xl md:text-2xl font-black tracking-tight leading-none">Local Police Finder</h1>
+        <span class="text-[10px] uppercase tracking-[0.2em] font-bold text-accent">Tamil Nadu Police Digital Portal</span>
+      </div>
+    </div>
+    <nav class="relative z-10">
+      <ul id="nav-menu" class="flex flex-wrap gap-4 md:gap-8 list-none font-medium text-sm md:text-base">
+        <li><a href="index.html" class="nav-link hover:text-accent transition">Home</a></li>
+        <li><a href="map.html" class="nav-link hover:text-accent transition">Map</a></li>
+        <li><a href="nearest.html" class="nav-link hover:text-accent transition">Nearest Station</a></li>
+        <li><a href="report.html" class="nav-link hover:text-accent transition">Report Incident</a></li>
+        <li><a href="complaint.html" class="nav-link text-accent scale-105 transition font-semibold">Complaint</a></li>
+        <li><a href="directory.html" class="nav-link hover:text-accent transition">Directory</a></li>
+        <li><a href="helpline.html" class="nav-link hover:text-accent transition">Helpline</a></li>
+        <li><a href="emergency.html" class="text-secondary font-black hover:scale-110 transition-all duration-300 drop-shadow-[0_0_8px_rgba(185,28,28,0.5)]">Emergency!</a></li>
+      </ul>
+    </nav>
+    <div class="relative z-10 auth-buttons mt-2 md:mt-0" id="auth-buttons"></div>
+  </header>
+
+  <main class="flex-grow max-w-4xl mx-auto p-6 md:p-12 w-full animate-fade-in">
+    <div class="text-center mb-12">
+      <h2 class="text-4xl md:text-5xl font-black text-primary mb-4">Official Complaint Portal</h2>
+      <div class="w-24 h-1.5 bg-secondary mx-auto rounded-full mb-6"></div>
+      <p class="text-slate-600 max-w-2xl mx-auto">Submit a formal grievance for administrative review. Each submission is securely logged and assigned a priority tracking ID.</p>
+    </div>
+    
+    <div class="glass-card p-8 md:p-12 rounded-[3rem] premium-shadow border border-white/60 relative overflow-hidden backdrop-blur-xl">
+      <div class="absolute -top-24 -left-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
+      
+      <form id="complaintForm" class="space-y-10 relative z-10">
+        <div class="grid md:grid-cols-2 gap-8">
+          <div class="space-y-2 group">
+            <label for="name" class="block pl-2 font-black text-slate-400 uppercase text-[10px] tracking-[0.2em] group-focus-within:text-accent transition-colors">Full Legal Name</label>
+            <input type="text" id="name" required class="w-full p-5 bg-white/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/5 focus:border-accent outline-none transition font-bold text-primary placeholder:text-slate-300 placeholder:font-normal" placeholder="As per official documents">
+          </div>
+          
+          <div class="space-y-2 group">
+            <label for="phone" class="block pl-2 font-black text-slate-400 uppercase text-[10px] tracking-[0.2em] group-focus-within:text-accent transition-colors">Contact Number</label>
+            <input type="text" id="phone" required class="w-full p-5 bg-white/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/5 focus:border-accent outline-none transition font-bold text-primary placeholder:text-slate-300 placeholder:font-normal" placeholder="+91 XXXX XXX XXX">
+          </div>
+
+          <div class="space-y-2 group">
+            <label for="email" class="block pl-2 font-black text-slate-400 uppercase text-[10px] tracking-[0.2em] group-focus-within:text-accent transition-colors">Email Address</label>
+            <input type="email" id="email" required class="w-full p-5 bg-white/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/5 focus:border-accent outline-none transition font-bold text-primary placeholder:text-slate-300 placeholder:font-normal" placeholder="Verification will be sent here">
+          </div>
+
+          <div class="space-y-2 group">
+            <label for="category" class="block pl-2 font-black text-slate-400 uppercase text-[10px] tracking-[0.2em] group-focus-within:text-accent transition-colors">Complaint Classification</label>
+            <div class="relative">
+              <select id="category" required class="w-full p-5 bg-white/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/5 focus:border-accent outline-none transition appearance-none font-bold text-primary">
+                <option value="">Select Category</option>
+                <option value="Cyber Crime">Digital / Cyber Offense</option>
+                <option value="Harassment">Personal Harassment</option>
+                <option value="Fraud">Financial Fraud / Corruption</option>
+                <option value="Property Dispute">Civil / Property Dispute</option>
+                <option value="Misc">Other Administrative Issues</option>
+              </select>
+              <div class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="space-y-2 group">
+          <label for="description" class="block pl-2 font-black text-slate-400 uppercase text-[10px] tracking-[0.2em] group-focus-within:text-accent transition-colors">Grievance Narrative</label>
+          <textarea id="description" rows="5" required class="w-full p-5 bg-white/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/5 focus:border-accent outline-none transition resize-none font-medium h-48 placeholder:text-slate-300" placeholder="Provide a detailed chronological account of the issues..."></textarea>
+        </div>
+        
+        <div class="space-y-2 group">
+          <label for="location" class="block pl-2 font-black text-slate-400 uppercase text-[10px] tracking-[0.2em] group-focus-within:text-accent transition-colors">Incident Jurisdiction</label>
+          <input type="text" id="location" required class="w-full p-5 bg-white/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/5 focus:border-accent outline-none transition font-bold text-primary placeholder:text-slate-300 placeholder:font-normal" placeholder="Specify station name, district, or area">
+        </div>
+        
+        <button type="submit" class="btn-premium w-full bg-primary hover:bg-indigo-900 text-white py-6 rounded-2xl font-black text-xs shadow-[0_20px_50px_rgba(30,27,75,0.3)] transition transform active:scale-95 uppercase tracking-[0.4em] flex items-center justify-center gap-4">
+          <span>Finalize Submission</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </button>
+      </form>
+      <div id="msg" class="mt-8 text-center font-bold px-8 py-5 rounded-2xl hidden animate-fade-in shadow-inner border"></div>
+    </div>
+  </main>
+
+  <footer class="bg-primary text-slate-500 py-16 px-6 border-t border-indigo-900/50 mt-auto">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
+      <div class="flex items-center gap-5">
+        <img src="assets/tn_police_logo.png" alt="Logo" class="h-12 w-12 opacity-30 grayscale brightness-200">
+        <div class="flex flex-col">
+          <span class="font-black text-white text-xs tracking-wider">Administrative Justice Portal</span>
+          <span class="text-[10px] uppercase tracking-widest opacity-50">Authorized Submission Node</span>
+        </div>
+      </div>
+      <p class="text-[10px] uppercase tracking-widest opacity-30 font-bold">&copy; 2026 Tamil Nadu Police Digital Division</p>
+      <div class="flex gap-8">
+        <a href="index.html" class="text-[10px] font-black uppercase tracking-widest hover:text-accent transition opacity-60">Home</a>
+        <a href="emergency.html" class="text-[10px] font-black uppercase tracking-widest text-secondary hover:underline">SOS 100</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.getElementById('complaintForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msgBox = document.getElementById('msg');
+      
+      const payload = {
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        email: document.getElementById('email').value,
+        category: document.getElementById('category').value,
+        description: document.getElementById('description').value,
+        location: document.getElementById('location').value,
+      };
+
+      msgBox.classList.remove('hidden', 'bg-emerald-50', 'text-emerald-800', 'bg-red-50', 'text-red-800', 'border-emerald-100', 'border-red-100');
+      msgBox.innerHTML = '<div class="flex items-center justify-center gap-4"><div class="w-5 h-5 border-3 border-primary border-t-transparent rounded-full animate-spin"></div><span class="uppercase tracking-[0.2em] font-black text-primary text-[10px]">Processing Authentication...</span></div>';
+      msgBox.classList.add('block', 'bg-indigo-50/50', 'text-indigo-800', 'border-indigo-100');
+      
+      try {
+        const res = await apiFetch('/complaint', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        msgBox.classList.remove('bg-indigo-50/50', 'text-indigo-800', 'border-indigo-100');
+        msgBox.classList.add('bg-emerald-50', 'text-emerald-800', 'border-emerald-100');
+        msgBox.innerHTML = `
+          <div class="flex flex-col gap-2">
+            <span class="text-emerald-600 font-black uppercase text-[10px] tracking-widest">Submission Authenticated</span>
+            <span class="text-xl tracking-tight">Docket Reference: <span class="font-black text-emerald-900">${res.complaint_id}</span></span>
+            <span class="text-[10px] text-emerald-500/80 font-medium italic mt-2">A notification has been dispatched to your registered email.</span>
+          </div>
+        `;
+        e.target.reset();
+      } catch (err) {
+        msgBox.classList.remove('bg-indigo-50/50', 'text-indigo-800', 'border-indigo-100');
+        msgBox.classList.add('bg-red-50', 'text-red-800', 'border-red-100');
+        msgBox.innerText = `FATAL ERROR: ${err.message}`;
+      }
+    });
+  </script>
+</body>
+</html>
