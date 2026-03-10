@@ -41,7 +41,46 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }
   }
+
+  // Fetch and display achievements on the home page if the section exists
+  const achievementsSection = document.getElementById('achievements-section');
+  if (achievementsSection) {
+    loadPublicAchievements();
+  }
 });
+
+async function loadPublicAchievements() {
+  try {
+    const list = document.getElementById('public-achievements-list');
+    const section = document.getElementById('achievements-section');
+    const achievements = await fetch(`${API_URL}/achievements`).then(res => res.json());
+
+    if (achievements && achievements.length > 0) {
+      section.classList.remove('hidden');
+      list.innerHTML = achievements.map(ach => `
+        <div class="bg-white rounded-3xl premium-shadow overflow-hidden group hover:-translate-y-2 transition duration-500 border border-slate-100 flex flex-col h-full snap-start flex-shrink-0 w-[300px] md:w-[380px]">
+          <div class="h-56 overflow-hidden relative">
+            <div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent z-10"></div>
+            <img src="http://localhost:5000${ach.imageUrl}" alt="${ach.title}" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+            <div class="absolute bottom-4 left-4 z-20">
+              <span class="bg-accent text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">Highlight</span>
+            </div>
+          </div>
+          <div class="p-8 flex flex-col flex-grow">
+            <h4 class="text-xl font-black text-primary mb-3 leading-tight group-hover:text-indigo-700 transition">${ach.title}</h4>
+            <p class="text-slate-500 text-sm leading-relaxed mb-6 flex-grow display:-webkit-box -webkit-line-clamp:3 -webkit-box-orient:vertical overflow-hidden">${ach.description}</p>
+            <div class="pt-4 border-t border-slate-100 mt-auto flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
+              <span>Published</span>
+              <span class="text-primary">${new Date(ach.date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+  } catch (error) {
+    console.error('Failed to load public achievements:', error);
+  }
+}
 
 // Logout function
 function logout() {

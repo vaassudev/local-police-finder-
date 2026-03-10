@@ -24,4 +24,15 @@ router.get('/', protect, admin, async (req, res) => {
   }
 });
 
+// Admin: Update alert status
+router.put('/status/:id', protect, admin, async (req, res) => {
+  try {
+    const alert = await EmergencyAlert.findOneAndUpdate({ alert_id: req.params.id }, { status: req.body.status }, { new: true });
+    if (alert) res.json(alert);
+    else res.status(404).json({ message: 'Alert not found' });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
 module.exports = router;

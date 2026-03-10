@@ -19,6 +19,7 @@ app.use('/api/stations', require('./routes/stationRoutes'));
 app.use('/api/report', require('./routes/reportRoutes'));
 app.use('/api/complaint', require('./routes/complaintRoutes'));
 app.use('/api/emergency', require('./routes/emergencyRoutes'));
+app.use('/api/achievements', require('./routes/achievementRoutes'));
 
 // Database Connection
 mongoose.connect(process.env.MONGODB_URI)
