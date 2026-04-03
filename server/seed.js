@@ -20,7 +20,7 @@ const seedData = async () => {
 
     await User.create({
       name: 'System Admin',
-      email: 'admin@police.gov',
+      email: 'admin@tnpolice.gov',
       phone: '9999999999',
       password: hashedPassword,
       role: 'admin'

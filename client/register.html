@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration | Local Police Finder</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E1B4B',
+                        secondary: '#B91C1C',
+                        accent: '#D97706',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body
+    class="bg-surface text-slate-900 flex flex-col items-center justify-center min-h-screen font-inter relative overflow-y-auto overflow-x-hidden py-10">
+    <div class="absolute inset-0 bg-gradient-to-br from-indigo-50 to-white pointer-events-none"></div>
+    <div
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none">
+    </div>
+
+    <main class="w-full max-w-md p-4 md:p-6 animate-fade-in relative z-10 my-auto">
+        <div
+            class="glass-card p-10 md:p-12 rounded-[3.5rem] premium-shadow border border-white/80 bg-white/40 backdrop-blur-2xl">
+            <div class="text-center mb-10">
+                <div class="mb-4 inline-block">
+                    <img src="assets/tn_police_logo.png" alt="TN Police Logo"
+                        class="h-16 w-16 object-contain bg-white rounded-full p-1 border-2 border-accent shadow-xl transform transition hover:scale-110">
+                </div>
+                <h2 class="text-3xl md:text-3xl font-black text-primary mb-2 italic tracking-tighter">Citizen
+                    Registration</h2>
+                <div class="w-12 h-1.5 bg-accent mx-auto rounded-full"></div>
+                <p class="mt-4 text-[9px] uppercase tracking-[0.4em] font-black text-slate-400">Secure Account Creation
+                </p>
+            </div>
+
+            <form id="registerForm" class="space-y-6">
+                <div class="space-y-3">
+                    <label class="block pl-2 font-black text-slate-400 uppercase text-[9px] tracking-[0.2em]">Full
+                        Name</label>
+                    <input type="text" id="name" required
+                        class="w-full p-4 bg-white/60 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/5 focus:border-accent outline-none transition font-bold text-primary placeholder:text-slate-300"
+                        placeholder="John Doe">
+                </div>
+                <div class="space-y-3">
+                    <label class="block pl-2 font-black text-slate-400 uppercase text-[9px] tracking-[0.2em]">Phone
+                        Number</label>
+                    <input type="tel" id="phone" required
+                        class="w-full p-4 bg-white/60 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/5 focus:border-accent outline-none transition font-bold text-primary placeholder:text-slate-300"
+                        placeholder="9876543210">
+                </div>
+                <div class="space-y-3">
+                    <label class="block pl-2 font-black text-slate-400 uppercase text-[9px] tracking-[0.2em]">Email
+                        Address</label>
+                    <input type="email" id="email" required
+                        class="w-full p-4 bg-white/60 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/5 focus:border-accent outline-none transition font-bold text-primary placeholder:text-slate-300"
+                        placeholder="name@domain.com">
+                </div>
+                <div class="space-y-3">
+                    <label
+                        class="block pl-2 font-black text-slate-400 uppercase text-[9px] tracking-[0.2em]">Password</label>
+                    <input type="password" id="password" required
+                        class="w-full p-4 bg-white/60 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/5 focus:border-accent outline-none transition font-bold text-primary placeholder:text-slate-300"
+                        placeholder="••••••••">
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-primary hover:bg-indigo-950 text-white py-5 rounded-2xl font-black text-xs shadow-2xl transition transform active:scale-95 uppercase tracking-[0.4em] flex items-center justify-center gap-3">
+                    <span>Create Account</span>
+                    <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                        </path>
+                    </svg>
+                </button>
+            </form>
+
+            <div id="err"
+                class="text-red-600 mt-6 text-center text-[10px] uppercase font-black tracking-widest min-h-[1.5rem] italic">
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-slate-100/50 flex flex-col gap-4 text-center">
+                <a href="login.html"
+                    class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-primary transition-colors hover:tracking-[0.4em]">&larr;
+                    Back to Login</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/script.js"></script>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value;
+            const pw = document.getElementById('password').value;
+            const errBox = document.getElementById('err');
+
+            errBox.innerText = 'Creating account...';
+
+            try {
+                const data = await apiFetch('/auth/register', {
+                    method: 'POST',
+                    body: JSON.stringify({ name, email, phone, password: pw })
+                });
+
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data));
+
+                window.location.href = 'index.html';
+
+            } catch (err) {
+                errBox.innerText = err.message.toUpperCase();
+            }
+        });
+    </script>
+</body>
+
+</html>

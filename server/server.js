@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 
 // Load env vars
 dotenv.config();
@@ -20,6 +21,14 @@ app.use('/api/report', require('./routes/reportRoutes'));
 app.use('/api/complaint', require('./routes/complaintRoutes'));
 app.use('/api/emergency', require('./routes/emergencyRoutes'));
 app.use('/api/achievements', require('./routes/achievementRoutes'));
+
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, '../client')));
+
+// Any uncaught routes (that aren't API calls) return the frontend's index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/index.html'));
+});
 
 // Database Connection
 mongoose.connect(process.env.MONGODB_URI)

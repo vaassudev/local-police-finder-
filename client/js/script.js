@@ -12,6 +12,8 @@ function getUser() {
   return user ? JSON.parse(user) : null;
 }
 
+
+
 // Navbar Logic: Render auth buttons and admin link based on login state
 document.addEventListener('DOMContentLoaded', () => {
   const authButtons = document.getElementById('auth-buttons');

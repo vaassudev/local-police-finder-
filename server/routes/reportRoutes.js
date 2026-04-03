@@ -46,4 +46,30 @@ router.put('/status/:id', protect, admin, async (req, res) => {
   }
 });
 
+// Admin: Update report details
+router.put('/:id', protect, admin, async (req, res) => {
+  try {
+    const report = await Report.findOneAndUpdate(
+      { report_id: req.params.id },
+      { $set: req.body },
+      { new: true }
+    );
+    if (report) res.json(report);
+    else res.status(404).json({ message: 'Report not found' });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// Admin: Delete report
+router.delete('/:id', protect, admin, async (req, res) => {
+  try {
+    const report = await Report.findOneAndDelete({ report_id: req.params.id });
+    if (report) res.json({ message: 'Report removed' });
+    else res.status(404).json({ message: 'Report not found' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;
