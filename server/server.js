@@ -26,7 +26,7 @@ app.use('/api/achievements', require('./routes/achievementRoutes'));
 app.use(express.static(path.join(__dirname, '../client')));
 
 // Any uncaught routes (that aren't API calls) return the frontend's index.html
-app.get('*', (req, res) => {
+app.get(/.*/, (req, res) => {
   res.sendFile(path.join(__dirname, '../client/index.html'));
 });
 
